@@ -11,7 +11,7 @@ def step_window(array, window, step):
 
 	array: numpy array
 	window: window size based on array index
-	step: size of steps between captured windows (may overlap with
+	step: number of rows between captured windows (may overlap with
 		other windows)
 
 	And sorry, people reading this, but I like to think of matricies
