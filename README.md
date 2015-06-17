@@ -1,2 +1,2 @@
 # scripts and ipython notebooks
-I'm writing 'em, so why not publish 'em?
+This will eventually become various collections of scripts and notebooks that won't easily fall into newer repositories. For now, it'll just be where I store my python code.
