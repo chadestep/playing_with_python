@@ -18,6 +18,8 @@ def step_window(array, window, step):
 	in Cartesian coordinates. It's the only way I can keep everything
 	straight in my head. So to me, x = columns, y = rows, z = depth.
 	If you really hate that, then feel free to change the code :)
+	
+	Could change it to rows = axis_0, columns = axis_1, depth = axis_2.
 	"""
 
 	if array.ndim < 2:
