@@ -87,12 +87,12 @@ def rolling_window(df, window, step):
         for i in range(num_epochs):
             epoch_names.append('epoch' + str(i + 1).zfill(3))
             epoch_arrays.append(grouped.get_group(sweep)[(0 + step * i):(window + step * i)])
-        data_dict = dict(zip(epoch_names, epoch_arrays)) # do i need
-        # this?
-        df = pd.concat(epoch_arrays, keys=epoch_names).swaplevel(0,1)
+        data_dict = dict(zip(epoch_names, epoch_arrays))
+        # NEXT LINE IS MEERLY A STOPGAP UNTIL I REWRITE THE FUNCTION!
+        df = pd.concat(epoch_arrays, keys=epoch_names, names=['epoch','sweep',None]).swaplevel(0,1)
         df_list.append(df)
-
     return pd.concat(df_list)
+
 
 def simpleaxis(ax):
     """
