@@ -5,3 +5,11 @@ This will eventually become various collections of scripts and notebooks that wo
 
 # Electrophysiology analysis module
 The 'ephys_analysis.py' module is slowly being built, so be patient. It's functional, but I'm already seeing ways of dramatically improving and cleaning the code in the short time I've been developing it. So, needless to say, please check back when I commit new changes.
+
+# TODO:
+* add proper documentation to newly created functions
+* jupyter notebook describing module
+* add exceptions to functions
+* speed up functions
+* add signal processing and plotting functions
+* clean and organize python repository

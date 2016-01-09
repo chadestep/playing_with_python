@@ -2,7 +2,8 @@ __author__ = "Chad Estep (chadestep@gmail.com)"
 
 import numpy as np
 import scipy as sp
-from scipy import signal
+from scipy.signal import periodogram
+from scipy.stats import gaussian_kde
 from neo import io
 import pandas as pd
 # import matplotlib.pyplot as plt
@@ -47,9 +48,8 @@ def read_abf(filename, groupby=False):
             names=['sweep'])
 
 
-def rolling_window(df, window, step):
+def create_epoch(df, window, step):
     """
-    ORIGINALLY TITLED: 'create_epoch', but thought this was better
     BETA: lots of functionality to add and code to clean.
 
     This function takes an input DataFrame and groups it by its level=0
@@ -74,23 +74,74 @@ def rolling_window(df, window, step):
     window = int(window)
     step = int(step)
     df_list = []
-    sweep_list = []
-    sweep_names = []
-    grouped = df.groupby(level=0)
+    sweeps = df.index.levels[0].values
+    rows = len(df.ix[df.index.levels[0][0]])
+    num_epochs = int(1 + (rows - window) / step)
 
-    for sweep, data in grouped:
-        rows = len(grouped.get_group(sweep))
-        epoch_arrays = []
-        epoch_names = []
-        sweep_names.append(sweep)
-        num_epochs = int(1 + (rows - window) / step)
+    for sweep in sweeps:
         for i in range(num_epochs):
-            epoch_names.append('epoch' + str(i + 1).zfill(3))
-            epoch_arrays.append(grouped.get_group(sweep)[(0 + step * i):(window + step * i)])
-        data_dict = dict(zip(epoch_names, epoch_arrays))
-        # NEXT LINE IS MEERLY A STOPGAP UNTIL I REWRITE THE FUNCTION!
-        df = pd.concat(epoch_arrays, keys=epoch_names, names=['epoch','sweep',None]).swaplevel(0,1)
-        df_list.append(df)
+            epoch_name = 'epoch' + str(i + 1).zfill(3)
+            epoch = df.ix[sweep][(0 + step * i):(window + step * i)]
+            arrays = [[sweep]*window,[epoch_name]*window]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
+            epoch_df = pd.DataFrame(epoch, columns=df.columns.values)
+#             annoying, but setting index after is necessary due to bug
+            epoch_df.set_index(index, inplace=True)
+            df_list.append(epoch_df)
+
+    return pd.concat(df_list)
+
+
+def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
+    """
+    Creates a bunch of 1D histograms of the epochs created from
+    ea.rolling_window function.
+
+    """
+    sweep_arrays = []
+    epoch_arrays = []
+    df_list = []
+    sweeps = epoch_df.index.levels[0].values
+    epochs = epoch_df.index.levels[1].values
+    
+    for sweep in sweeps:
+        for epoch in epochs:
+            data = epoch_df.ix[sweep][channel].xs(epoch)
+            epoch_hist, bins = np.histogram(data, bins=num_bins, range=(hist_min,hist_max))
+            arrays = [[sweep]*len(epoch_hist),[epoch]*len(epoch_hist),np.linspace(hist_min, hist_max, len(bins))]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch','bin'])
+            df = pd.DataFrame(epoch_hist, columns=[channel])
+#             annoying, but setting index after is necessary due to bug
+            df.set_index(index, inplace=True)
+            df_list.append(df)
+    return pd.concat(df_list)
+
+
+def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
+    """
+    Creates a bunch of 1D KDEs of the epochs created from
+    ea.create_epoch function.
+    
+    """
+    
+    df_list = []
+    samples = samples
+    x = np.linspace(range_min, range_max, samples)
+    sweeps = epoch_df.index.levels[0].values
+    epochs = epoch_df.index.levels[1].values
+    
+    for sweep in sweeps:
+        for epoch in epochs:
+            data = epoch_df.ix[sweep][channel].xs(epoch)        
+            kde = sp.stats.gaussian_kde(data)
+            kde_data = kde(x)
+            arrays = [[sweep]*len(x),[epoch]*len(x)]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
+            df = pd.DataFrame(list(zip(x,kde_data)), columns=['x',channel])
+#             annoying, but setting index after is necessary due to bug
+            df.set_index(index, inplace=True)
+            df_list.append(df)
+        
     return pd.concat(df_list)
 
 
@@ -122,31 +173,3 @@ def simpleaxes(ax):
         ax[i].spines['right'].set_visible(False)
         ax[i].get_xaxis().tick_bottom()
         ax[i].get_yaxis().tick_left()
-
-
-def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
-    """
-    Creates a bunch of 1D histograms of the epochs created from
-    ea.rolling_window function. (SO ASSUMES EPOCH'D DATAFRAME)
-    """
-    sweep_arrays = []
-    epoch_arrays = []
-    df_list = []
-    sweeps = epoch_df.index.levels[0].values
-    epochs = epoch_df.index.levels[1].values
-    
-    for sweep in sweeps:
-        for epoch in epochs:
-            data = epoch_df.ix[sweep][channel].xs(epoch)
-            epoch_hist, bins = np.histogram(data, bins=num_bins, range=(hist_min,hist_max))
-            arrays = [[sweep]*len(epoch_hist),[epoch]*len(epoch_hist),np.linspace(hist_min, hist_max, len(bins))]
-            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch','bin'])
-            df = (pd.DataFrame(epoch_hist, columns=[channel]))
-            df.set_index(index, inplace=True)
-            df_list.append(df)
-    return pd.concat(df_list)
-
-
-
-
-
