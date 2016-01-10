@@ -88,6 +88,7 @@ def create_epoch(df, window, step):
 #             annoying, but setting index after is necessary due to bug
             epoch_df.set_index(index, inplace=True)
             df_list.append(epoch_df)
+
     return pd.concat(df_list)
 
 
@@ -109,8 +110,8 @@ def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
             epoch_hist, bins = np.histogram(data, bins=num_bins, range=(hist_min,hist_max))
             arrays = [[sweep]*len(epoch_hist),[epoch]*len(epoch_hist)]
             index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
-            data_list = list(zip(bins,epoch_hist))
-            df = pd.DataFrame(data_list, columns=['bins',channel])
+            data_list = list(zip(bins, epoch_hist))
+            df = pd.DataFrame(data_list, columns=['bin',channel])
 #             annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
@@ -121,6 +122,7 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
     """
     Creates a bunch of 1D KDEs of the epochs created from
     ea.create_epoch function.
+    
     """
     
     df_list = []
@@ -131,7 +133,7 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
     
     for sweep in sweeps:
         for epoch in epochs:
-            data = epoch_df.ix[sweep][channel].xs(epoch)        
+            data = epoch_df.ix[sweep][channel].xs(epoch)
             kde = sp.stats.gaussian_kde(data)
             kde_data = kde(x)
             arrays = [[sweep]*len(x),[epoch]*len(x)]
@@ -141,12 +143,14 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
 #             annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
+        
     return pd.concat(df_list)
 
 
 def epoch_pgram(epoch_df, channel, fs=10e3):
     """
     Run periodogram on each epoch
+
     """
     
     df_list = []
@@ -165,6 +169,7 @@ def epoch_pgram(epoch_df, channel, fs=10e3):
 #         annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
+        
     return pd.concat(df_list)
 
 
