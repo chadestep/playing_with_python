@@ -145,6 +145,33 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
     return pd.concat(df_list)
 
 
+def epoch_pgram(epoch_df, channel, fs=10e3):
+    """
+    Run periodogram on each epoch
+    """
+    
+    df_list = []
+    fs = fs
+    sweeps = epoch_df.index.levels[0].values
+    epochs = epoch_df.index.levels[1].values
+    
+    for sweep in sweeps:
+        for epoch in epochs:
+#             grab data and run function
+            data = epoch_df.ix[sweep][channel].xs(epoch)
+            pgram_f, pgram_den = periodogram(data, fs)
+#             set up multiindex
+            arrays = [[sweep]*len(pgram_f),[epoch]*len(pgram_f),pgram_f]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch','fs'])
+#         construct the dataframe and append it to the list
+            df = pd.DataFrame(pgram_den, columns=[channel])
+#         annoying, but setting index after is necessary due to bug
+            df.set_index(index, inplace=True)
+            df_list.append(df)
+        
+    return pd.concat(df_list)
+
+
 def simpleaxis(ax):
     """
     (note: stolen from somewhere else, but forgot where)
