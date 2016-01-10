@@ -88,7 +88,6 @@ def create_epoch(df, window, step):
 #             annoying, but setting index after is necessary due to bug
             epoch_df.set_index(index, inplace=True)
             df_list.append(epoch_df)
-
     return pd.concat(df_list)
 
 
@@ -108,9 +107,10 @@ def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
         for epoch in epochs:
             data = epoch_df.ix[sweep][channel].xs(epoch)
             epoch_hist, bins = np.histogram(data, bins=num_bins, range=(hist_min,hist_max))
-            arrays = [[sweep]*len(epoch_hist),[epoch]*len(epoch_hist),np.linspace(hist_min, hist_max, len(bins))]
-            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch','bin'])
-            df = pd.DataFrame(epoch_hist, columns=[channel])
+            arrays = [[sweep]*len(epoch_hist),[epoch]*len(epoch_hist)]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
+            data_list = list(zip(bins,epoch_hist))
+            df = pd.DataFrame(data_list, columns=['bins',channel])
 #             annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
@@ -121,7 +121,6 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
     """
     Creates a bunch of 1D KDEs of the epochs created from
     ea.create_epoch function.
-    
     """
     
     df_list = []
@@ -137,11 +136,11 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
             kde_data = kde(x)
             arrays = [[sweep]*len(x),[epoch]*len(x)]
             index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
-            df = pd.DataFrame(list(zip(x,kde_data)), columns=['x',channel])
+            data_list = list(zip(x,kde_data))
+            df = pd.DataFrame(data_list, columns=['x',channel])
 #             annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
-        
     return pd.concat(df_list)
 
 
@@ -157,18 +156,15 @@ def epoch_pgram(epoch_df, channel, fs=10e3):
     
     for sweep in sweeps:
         for epoch in epochs:
-#             grab data and run function
             data = epoch_df.ix[sweep][channel].xs(epoch)
             pgram_f, pgram_den = periodogram(data, fs)
-#             set up multiindex
-            arrays = [[sweep]*len(pgram_f),[epoch]*len(pgram_f),pgram_f]
-            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch','fs'])
-#         construct the dataframe and append it to the list
-            df = pd.DataFrame(pgram_den, columns=[channel])
+            arrays = [[sweep]*len(pgram_f),[epoch]*len(pgram_f)]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
+            data_list = list(zip(pgram_f,pgram_den))
+            df = pd.DataFrame(data_list, columns=['frequency',channel])
 #         annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
-        
     return pd.concat(df_list)
 
 
