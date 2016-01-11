@@ -19,7 +19,7 @@ def read_abf(filename):
     More documentation necessary.
 
     Input parameters
-    filename: 
+    filename  : filename WITH '.abf' extension
     """
 
     r = io.AxonIO(filename = filename)
@@ -58,9 +58,9 @@ def create_epoch(df, window, step):
     new array may be truncated.
 
     Input parameters
-    df     : input pandas dataframe
-    window : epoch size based on array index
-    step   : start-to-start number of rows between captured windows 
+    df        : input pandas dataframe
+    window    : epoch size based on array index
+    step      : start-to-start number of rows between captured windows 
              (may overlap with other windows)
     """
 
@@ -89,11 +89,11 @@ def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
     ea.rolling_window function.
 
     Input parameters
-    epoch_df: dataframe from 'create_epoch' function
-    channel: channel column to be analyzed
-    hist_min: minimum of histogram bin range
-    hist_max: maximum of histogram bin range
-    num_bins: number of bins you want
+    epoch_df  : dataframe from 'create_epoch' function
+    channel   : channel column to be analyzed
+    hist_min  : minimum of histogram bin range
+    hist_max  : maximum of histogram bin range
+    num_bins  : number of bins you want
     """
     sweep_arrays = []
     epoch_arrays = []
@@ -120,11 +120,11 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
     ea.create_epoch function.
     
     Input parameters
-    epoch_df: dataframe from 'create_epoch' function
-    channel: channel column to be analyzed
-    range_min: minimum of KDE range
-    range_max: maximum of KDE range
-    samples: number of KDE samples
+    epoch_df  : dataframe from 'create_epoch' function
+    channel   : channel column to be analyzed
+    range_min : minimum of KDE range
+    range_max : maximum of KDE range
+    samples   : number of KDE samples
     """
     
     df_list = []
@@ -152,9 +152,9 @@ def epoch_pgram(epoch_df, channel, fs=10e3):
     Run periodogram on each epoch
 
     Input parameters
-    epoch_df: dataframe from 'create_epoch' function
-    channel: channel column to be analyzed
-    fs: sampling frequency
+    epoch_df  : dataframe from 'create_epoch' function
+    channel   : channel column to be analyzed
+    fs        : sampling frequency
     """
     
     df_list = []
@@ -184,7 +184,7 @@ def simpleaxis(ax):
     GridSpec objects (need to figure that out.)
 
     Input
-    ax: matplotlib.pyplot axis
+    ax        : matplotlib.pyplot axis
 
     """
     ax.spines['top'].set_visible(False)
