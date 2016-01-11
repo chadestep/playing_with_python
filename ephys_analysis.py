@@ -75,8 +75,8 @@ def create_epoch(df, window, step):
         for i in range(num_epochs):
             epoch_name = 'epoch' + str(i + 1).zfill(3)
             epoch = df.ix[sweep][(0 + step * i):(window + step * i)]
-            arrays = [[sweep]*window,[epoch_name]*window]
-            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
+            arrays = [[sweep]*window,[epoch_name]*window,np.arange(window)]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch',None])
             epoch_df = pd.DataFrame(epoch, columns=df.columns.values)
             epoch_df.set_index(index, inplace=True)
             df_list.append(epoch_df)
@@ -105,8 +105,8 @@ def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
         for epoch in epochs:
             data = epoch_df.ix[sweep][channel].xs(epoch)
             epoch_hist, bins = np.histogram(data, bins=num_bins, range=(hist_min,hist_max))
-            arrays = [[sweep]*len(epoch_hist),[epoch]*len(epoch_hist)]
-            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
+            arrays = [[sweep]*len(epoch_hist),[epoch]*len(epoch_hist),np.arange(len(bins))]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch',None])
             data_list = list(zip(bins, epoch_hist))
             df = pd.DataFrame(data_list, columns=['bin',channel])
             df.set_index(index, inplace=True)
@@ -138,8 +138,8 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
             data = epoch_df.ix[sweep][channel].xs(epoch)
             kde = sp.stats.gaussian_kde(data)
             kde_data = kde(x)
-            arrays = [[sweep]*len(x),[epoch]*len(x)]
-            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
+            arrays = [[sweep]*len(x),[epoch]*len(x),np.arange(len(x))]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch',None])
             data_list = list(zip(x,kde_data))
             df = pd.DataFrame(data_list, columns=['x',channel])
             df.set_index(index, inplace=True)
@@ -166,8 +166,8 @@ def epoch_pgram(epoch_df, channel, fs=10e3):
         for epoch in epochs:
             data = epoch_df.ix[sweep][channel].xs(epoch)
             pgram_f, pgram_den = periodogram(data, fs)
-            arrays = [[sweep]*len(pgram_f),[epoch]*len(pgram_f)]
-            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
+            arrays = [[sweep]*len(pgram_f),[epoch]*len(pgram_f),np.arange(len(pgram_f))]
+            index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch',None])
             data_list = list(zip(pgram_f,pgram_den))
             df = pd.DataFrame(data_list, columns=['frequency',channel])
             df.set_index(index, inplace=True)
