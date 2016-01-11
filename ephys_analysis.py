@@ -8,7 +8,7 @@ from neo import io
 import pandas as pd
 # import matplotlib.pyplot as plt
 
-def read_abf(filename, groupby=False):
+def read_abf(filename):
     """
     Imports ABF file using neo io AxonIO, breaks it down by blocks 
     which are then processed into  a multidimensional pandas dataframe 
@@ -18,15 +18,16 @@ def read_abf(filename, groupby=False):
     
     More documentation necessary.
 
-    TODO: remove final 'names' attribute from .concat?
+    Input parameters
+    filename: 
     """
-    
+
     r = io.AxonIO(filename = filename)
     bl = r.read_block(lazy=False, cascade=True)
     num_channels = len(bl.segments[0].analogsignals)
-    df_list = []
     channels = []
     signals = []
+    df_list = []
     sweep_list = []
 
     for seg_num, seg in enumerate(bl.segments):
@@ -39,19 +40,11 @@ def read_abf(filename, groupby=False):
         df = pd.DataFrame(data_dict)
         df_list.append(df)
         sweep_list.append('sweep' + str(seg_num + 1).zfill(3))
-        
-    if groupby:
-        return pd.concat(df_list, keys=sweep_list, 
-            names=['sweep']).groupby(level='sweep')
-    else: 
-        return pd.concat(df_list, keys=sweep_list, 
-            names=['sweep'])
+    return pd.concat(df_list, keys=sweep_list, names=['sweep'])
 
 
 def create_epoch(df, window, step):
     """
-    BETA: lots of functionality to add and code to clean.
-
     This function takes an input DataFrame and groups it by its level=0
     index before passing it to the rest of the function to create a new
     Multiindex DataFrame with the original level=0 being the same, and
@@ -62,9 +55,9 @@ def create_epoch(df, window, step):
     than that number, then just go ahead and change the source code.
 
     NOTE: based on your specified window and step size, your 
-    new array may be truncated. 
+    new array may be truncated.
 
-    Inputs
+    Input parameters
     df     : input pandas dataframe
     window : epoch size based on array index
     step   : start-to-start number of rows between captured windows 
@@ -85,10 +78,8 @@ def create_epoch(df, window, step):
             arrays = [[sweep]*window,[epoch_name]*window]
             index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
             epoch_df = pd.DataFrame(epoch, columns=df.columns.values)
-#             annoying, but setting index after is necessary due to bug
             epoch_df.set_index(index, inplace=True)
             df_list.append(epoch_df)
-
     return pd.concat(df_list)
 
 
@@ -97,6 +88,12 @@ def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
     Creates a bunch of 1D histograms of the epochs created from
     ea.rolling_window function.
 
+    Input parameters
+    epoch_df: dataframe from 'create_epoch' function
+    channel: channel column to be analyzed
+    hist_min: minimum of histogram bin range
+    hist_max: maximum of histogram bin range
+    num_bins: number of bins you want
     """
     sweep_arrays = []
     epoch_arrays = []
@@ -112,7 +109,6 @@ def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
             index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
             data_list = list(zip(bins, epoch_hist))
             df = pd.DataFrame(data_list, columns=['bin',channel])
-#             annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
     return pd.concat(df_list)
@@ -123,6 +119,12 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
     Creates a bunch of 1D KDEs of the epochs created from
     ea.create_epoch function.
     
+    Input parameters
+    epoch_df: dataframe from 'create_epoch' function
+    channel: channel column to be analyzed
+    range_min: minimum of KDE range
+    range_max: maximum of KDE range
+    samples: number of KDE samples
     """
     
     df_list = []
@@ -140,10 +142,8 @@ def epoch_kde(epoch_df, channel, range_min, range_max, samples=1000):
             index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
             data_list = list(zip(x,kde_data))
             df = pd.DataFrame(data_list, columns=['x',channel])
-#             annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
-        
     return pd.concat(df_list)
 
 
@@ -151,6 +151,10 @@ def epoch_pgram(epoch_df, channel, fs=10e3):
     """
     Run periodogram on each epoch
 
+    Input parameters
+    epoch_df: dataframe from 'create_epoch' function
+    channel: channel column to be analyzed
+    fs: sampling frequency
     """
     
     df_list = []
@@ -166,10 +170,8 @@ def epoch_pgram(epoch_df, channel, fs=10e3):
             index = pd.MultiIndex.from_arrays(arrays, names=['sweep','epoch'])
             data_list = list(zip(pgram_f,pgram_den))
             df = pd.DataFrame(data_list, columns=['frequency',channel])
-#         annoying, but setting index after is necessary due to bug
             df.set_index(index, inplace=True)
             df_list.append(df)
-        
     return pd.concat(df_list)
 
 
