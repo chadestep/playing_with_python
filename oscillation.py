@@ -113,7 +113,7 @@ def epoch_hist(epoch_df, channel, hist_min, hist_max, num_bins):
     return df
 
 
-def epoch_kde(epoch_df, channel, range_min, range_max, resolution=1000):
+def epoch_kde(epoch_df, channel, range_min, range_max, resolution=None):
     """
     Returns a 1D kernel density estimation with automatic bandwidth
     detection for each of the epochs created from the 'create_epoch'
@@ -146,7 +146,10 @@ def epoch_kde(epoch_df, channel, range_min, range_max, resolution=1000):
     
     kde_arrays = []
     x_arrays = []
-    resolution = resolution
+    if resolution == None:
+        resolution = abs(range_min - range_max) * 5
+    else:
+        resolution = resolution
     sweep_names = epoch_df.index.levels[0].values
     epoch_names = epoch_df.index.levels[1].values
     idx = np.arange(resolution)
