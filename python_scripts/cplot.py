@@ -73,24 +73,5 @@ def naked_plot(x, y, xlims, ylims, x_val_scale, y_val_scale,
         pass
     else:
         plt.legend(frameon=False)
-    plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # plt.show()
+    return f, ax
