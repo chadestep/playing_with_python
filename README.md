@@ -1,5 +1,4 @@
 # Scripts and Jupyter notebooks
--
 This will eventually become various collections of scripts and notebooks that won't easily fall into newer repositories. For now, it'll just be where I store my random python code and jupyter notebooks.
 
 # Electrophysiology analysis module
