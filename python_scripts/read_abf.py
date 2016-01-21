@@ -56,6 +56,6 @@ def read_abf(filename):
         df_list.append(df)
         # make a new sweep name and append it to the list
         sweep_list.append('sweep' + str(seg_num + 1).zfill(3))
-        # pretty sure this doesn't need to be indented...
-        df = pd.concat(df_list, keys=sweep_list, names=['sweep'])
+    # concatenate all the dfs in the list and give the proper index to each sweep
+    df = pd.concat(df_list, keys=sweep_list, names=['sweep'])
     return df
