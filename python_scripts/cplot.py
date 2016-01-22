@@ -12,7 +12,7 @@ def simpleaxis(ax):
 
     Parameters
     ----------
-    ax: 
+    ax:
         Matplotlib.pyplot axis object
     """
     ax.spines['top'].set_visible(False)
@@ -73,5 +73,4 @@ def naked_plot(x, y, xlims, ylims, x_val_scale, y_val_scale,
         pass
     else:
         plt.legend(frameon=False)
-    # plt.show()
     return f, ax
