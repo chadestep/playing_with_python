@@ -54,6 +54,13 @@ def naked_plot(x, y, xlims, ylims, x_val_scale, y_val_scale,
         will span the rightmost 10% of the plot.
     legend: bool (default: False)
         Do you want a legend or not?
+
+    Return
+    ------
+    f:
+        Pyplot figure object.
+    ax:
+        Pyplot axis object.
     """
 
     f, ax = plt.subplots(1)
@@ -73,4 +80,28 @@ def naked_plot(x, y, xlims, ylims, x_val_scale, y_val_scale,
         pass
     else:
         plt.legend(frameon=False)
+    return f, ax
+
+def raster(event_list, color='black'):
+    """
+    Creates a simple, single line, raster plot.
+
+    Parameters
+    ----------
+    event_list: list of ints/floats
+        List of the event times you want to plot.
+    color: string (default='black')
+        Color you want your raster plot
+
+    Return
+    ------
+    f:
+        Pyplot figure object.
+    ax:
+        Pyplot axis object.
+    """
+
+    f, ax = plt.subplots()
+    for i in range(len(event_list)):
+        ax.vlines(trial, 0, 0.1, color=color)
     return f, ax
