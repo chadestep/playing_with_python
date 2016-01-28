@@ -31,7 +31,7 @@ def simpleaxes(ax):
         ax[i].get_yaxis().tick_left()
 
 def naked_plot(x, y, xlims, ylims, x_val_scale, y_val_scale,
-    legend=False):
+    legend=True):
     """
     Make a minimalist plot that contains only the data and two scale
     bars (x and y).
@@ -52,8 +52,8 @@ def naked_plot(x, y, xlims, ylims, x_val_scale, y_val_scale,
     y_val_scale: int/float
         The y-value where you want to draw the x-axis scale bar. Bar
         will span the rightmost 10% of the plot.
-    legend: bool (default: False)
-        Do you want a legend or not?
+    legend: bool (default: True)
+        Legend containing the size of each of your scale bars, each one being 10% of the total x or y-axis length (so make note of that number if you choose not to plot it).
 
     Return
     ------
@@ -105,3 +105,7 @@ def raster(event_list, color='black'):
     for i in range(len(event_list)):
         ax.vlines(trial, 0, 0.1, color=color)
     return f, ax
+
+
+def c_boxpot(things):
+    print("i'm not done yet")
