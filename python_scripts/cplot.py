@@ -5,107 +5,116 @@ __author__ = "Chad Estep (chadestep@gmail.com)"
 
 import matplotlib.pyplot as plt
 
-def simpleaxis(ax):
+"""
+Note: Still need to test on much more complicated subplot structures.
+"""
+
+def simple_axis(ax):
     """
-    Removes the top and right axis lines and tick marks on standard
-    pyplot figures. Does not work with GridSpec objects.
+    Removes the top and right axis lines and tick marks for a single matplotlib.axes object.
 
     Parameters
     ----------
     ax:
-        Matplotlib.pyplot axis object
+        matplotlib.axes._subplots.AxesSubplot.
     """
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
 
-def simpleaxes(ax):
+def simple_figure(f):
     """
-    Like 'simpleaxis,'' but for multiple subplots
-    """
-    for i, data in enumerate(ax):
-        ax[i].spines['top'].set_visible(False)
-        ax[i].spines['right'].set_visible(False)
-        ax[i].get_xaxis().tick_bottom()
-        ax[i].get_yaxis().tick_left()
-
-def naked_plot(x, y, xlims, ylims, x_val_scale, y_val_scale,
-    legend=True):
-    """
-    Make a minimalist plot that contains only the data and two scale
-    bars (x and y).
+    Removes the top and right axis lines and tick marks for all axes in a matplolib figure.
 
     Parameters
     ----------
-    x: array
-        X-axis data.
-    y: array
-        Y-axis data.
-    xlims: tuple
-        X min and max values. Example: (0, 10)
-    ylims: tuple
-        Y min and max values. Example: (-70, 20)
-    x_val_scale: int/float
-        The x-value where you want to draw the y-axis scale bar. Bar
-        will span the bottom 10% of the plot.
-    y_val_scale: int/float
-        The y-value where you want to draw the x-axis scale bar. Bar
-        will span the rightmost 10% of the plot.
-    legend: bool (default: True)
-        Legend containing the size of each of your scale bars, each one being 10% of the total x or y-axis length (so make note of that number if you choose not to plot it).
-
-    Return
-    ------
     f:
-        Pyplot figure object.
-    ax:
-        Pyplot axis object.
+        matplotlib.figure.Figure object.
     """
+    num_ax = len(f.axes)
+    if num_ax == 1:
+        simple_axis(f.axes[0])
+    else:
+        for i in range(num_ax):
+            f.axes[i].spines['top'].set_visible(False)
+            f.axes[i].spines['right'].set_visible(False)
+            f.axes[i].get_xaxis().tick_bottom()
+            f.axes[i].get_yaxis().tick_left()
 
-    f, ax = plt.subplots(1)
-    ax.plot(x,y)
-    simpleaxis(ax)
+def clean_axis(ax, **y_hline):
+    """
+    Removes all axis lines and tick marks for a single matplotlib.axes object.
+
+    Parameters
+    ----------
+    ax:
+        matplotlib.axes._subplots.AxesSubplot.
+    y_hline: dict or None (default)
+        Draws an arbitrary number of dotted horizontal lines at a user specified y-values that spans the entire length of the figure.
+        ex: string = <int or float>
+            baseline = -50.0
+    """
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
-    ax.set_xlim(xlims)
-    ax.set_ylim(ylims)
-    ax.axvline(x=x_val_scale, ymin=0, ymax=0.1, color='black', lw=2,
-        label='y: {0}'.format((ylims[1]-ylims[0])/10))
-    ax.axhline(y=y_val_scale, xmin=0.9, xmax=1.0, color='black', lw=2,
-        label='x: {0}'.format((xlims[1]-xlims[0])/10))
-    if legend == False:
-        pass
-    else:
-        plt.legend(frameon=False)
-    return f, ax
+    for key, val in y_hline.items():
+        ax.axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1}'.format(key,val))
 
-def raster(event_list, color='black'):
+def clean_figure(f, **y_hline):
     """
-    Creates a simple, single line, raster plot.
+    Removes all axis lines and tick marks for all axes in a matplolib figure.
 
     Parameters
     ----------
-    event_list: list of ints/floats
-        List of the event times you want to plot.
-    color: string (default='black')
-        Color you want your raster plot
-
-    Return
-    ------
     f:
-        Pyplot figure object.
-    ax:
-        Pyplot axis object.
+        matplotlib.figure.Figure object.
+    y_hline: dict or None (default)
+        Draws an arbitrary number of dotted horizontal lines at a user specified y-values that spans the entire length of the figure.
+        ex: string = <int or float>
+            baseline = -50.0
     """
+    num_ax = len(f.axes)
+    if num_ax == 1:
+        clean_axis(f.axes[0], **y_hline)
+    else:
+        for i in range(num_ax):
+            f.axes[i].spines['top'].set_visible(False)
+            f.axes[i].spines['right'].set_visible(False)
+            f.axes[i].spines['bottom'].set_visible(False)
+            f.axes[i].spines['left'].set_visible(False)
+            f.axes[i].get_xaxis().set_visible(False)
+            f.axes[i].get_yaxis().set_visible(False)
+            for key, val in y_hline.items():
+                f.axes[i].axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1}'.format(key,val))
 
-    f, ax = plt.subplots()
-    for i in range(len(event_list)):
-        ax.vlines(trial, 0, 0.1, color=color)
-    return f, ax
+def scaleandlegend(f, x_scale, x_units, y_scale, y_units):
+    """
+    Add x and y scalebars to the bottom right of the only/last subplot of a figure and a legend outside of the figure.
 
-
-def c_boxpot(things):
-    print("i'm not done yet")
+    Parameters
+    ----------
+    f:
+        matplotlib.figure.Figure object.
+    x_scale: int or float
+        User specified length of the scale bar.
+    x_units: string
+        X-axis units used in the figure legend.
+    y_scale: int or float
+        User specified length of the scale bar.
+    y_units: string
+        Y-axis units used in the figure legend.
+    """
+    ax = f.axes[-1]
+    x_min,x_max = ax.get_xlim()[0],ax.get_xlim()[1]
+    y_min,y_max = ax.get_ylim()[0],ax.get_ylim()[1]
+    x_range = abs(x_min-x_max)
+    y_range = abs(y_min-y_max)
+    hline_min = (x_scale/x_range)
+    vline_max = (y_scale/y_range)
+    ax.axhline(y=y_min,xmin=(1-hline_min),xmax=1,color='black',lw=2,label='x: {0} {1}'.format(x_scale,x_units))
+    ax.axvline(x=x_max,ymin=0,ymax=vline_max,color='black',lw=2,label='y: {0} {1}'.format(y_scale,y_units))
+    plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0, frameon=False)
