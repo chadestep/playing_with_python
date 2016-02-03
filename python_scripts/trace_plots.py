@@ -83,7 +83,7 @@ def clean_figure(f, y_units, **y_hline):
     """
     num_ax = len(f.axes)
     if num_ax == 1:
-        clean_axis(f.axes[0], **y_hline)
+        clean_axis(f.axes[0], y_units, **y_hline)
     else:
         for i in range(num_ax):
             f.axes[i].spines['top'].set_visible(False)
@@ -93,7 +93,7 @@ def clean_figure(f, y_units, **y_hline):
             f.axes[i].get_xaxis().set_visible(False)
             f.axes[i].get_yaxis().set_visible(False)
             for key, val in y_hline.items():
-                ax.axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1} {2}'.format(key,val,y_units))
+                f.axes[i].axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1} {2}'.format(key,val,y_units))
 
 def scaleandlegend(f, x_scale, x_units, y_scale, y_units):
     """
