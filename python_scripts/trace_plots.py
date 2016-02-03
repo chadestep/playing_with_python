@@ -42,7 +42,7 @@ def simple_figure(f):
             f.axes[i].get_xaxis().tick_bottom()
             f.axes[i].get_yaxis().tick_left()
 
-def clean_axis(ax, **y_hline):
+def clean_axis(ax, y_units, **y_hline):
     """
     Removes all axis lines and tick marks for a single matplotlib.axes object.
 
@@ -50,6 +50,8 @@ def clean_axis(ax, **y_hline):
     ----------
     ax:
         matplotlib.axes._subplots.AxesSubplot.
+    y_units: string
+        The units you want listed in your legend for the y_hline(s).
     y_hline: dict or None (default)
         Draws an arbitrary number of dotted horizontal lines at a user specified y-values that spans the entire length of the figure.
         ex: string = <int or float>
@@ -62,9 +64,9 @@ def clean_axis(ax, **y_hline):
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
     for key, val in y_hline.items():
-        ax.axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1}'.format(key,val))
+        ax.axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1} {2}'.format(key,val,y_units))
 
-def clean_figure(f, **y_hline):
+def clean_figure(f, y_units, **y_hline):
     """
     Removes all axis lines and tick marks for all axes in a matplolib figure.
 
@@ -72,6 +74,8 @@ def clean_figure(f, **y_hline):
     ----------
     f:
         matplotlib.figure.Figure object.
+    y_units: string
+        The units you want listed in your legend for the y_hline(s).
     y_hline: dict or None (default)
         Draws an arbitrary number of dotted horizontal lines at a user specified y-values that spans the entire length of the figure.
         ex: string = <int or float>
@@ -89,11 +93,11 @@ def clean_figure(f, **y_hline):
             f.axes[i].get_xaxis().set_visible(False)
             f.axes[i].get_yaxis().set_visible(False)
             for key, val in y_hline.items():
-                f.axes[i].axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1}'.format(key,val))
+                ax.axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1} {2}'.format(key,val,y_units))
 
 def scaleandlegend(f, x_scale, x_units, y_scale, y_units):
     """
-    Add x and y scalebars to the bottom right of the only/last subplot of a figure and a legend outside of the figure.
+    Add x and y scale bars to the bottom right of the only/last subplot of a figure and a legend outside of the figure.
 
     Parameters
     ----------

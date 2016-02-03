@@ -1,5 +1,3 @@
-# THIS NEEDS TO BE UPDATED FOR 2.0 ONCE I WORK OUT ALL THE KINKS
-
 # Author: Chad Estep (chadestep.github.io / github.com/chadestep / chadestep@gmail.com)
 # "Because we're scientists, not graphic fucking designers."
 
@@ -16,7 +14,7 @@ lines.linewidth: 1
 font.family : Calibri
 font.size : 14
 
-axes.color_cycle : 000000, 1f77b4, ff7f0e, 2ca02c, d62728, 9467bd, 8c564b, e377c2, 7f7f7f, bcbd22, 17becf
+axes.prop_cycle: cycler('color', ['000000', '1f77b4', 'ff7f0e', '2ca02c', 'd62728', '9467bd', '8c564b', 'e377c2', '7f7f7f', 'bcbd22', '17becf'])
 				# 000000 : Black
 				# 1f77b4 : Blue
 				# ff7f0e : Orange
