@@ -4,6 +4,7 @@ __author__ = "Chad Estep (chadestep@gmail.com)"
 """ Basic plotting functions for 1D subplot structures """
 
 import matplotlib.pyplot as plt
+plt.style.use('estep_style')
 
 """
 Note: Still need to test on much more complicated subplot structures.
