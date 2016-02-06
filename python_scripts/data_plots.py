@@ -7,15 +7,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('estep_style')
 
-def nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline):
+def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
     """
     Makes a much improved boxplot.
 
     Parameters
     ----------
+    ax: matplotlib ax object
     df: pandas DataFrame
-        Pandas Dataframe where each of the columns makes a separate boxplot.
-        Column names will be used as x-axis labels.
+        Pandas Dataframe where each column makes a separate boxplot. Column names will be used as x-axis labels.
     medians_only: bool (default=False)
         Default changes the entire boxplot the new color,
         but if True only changes the color of the median bar.
@@ -30,7 +30,7 @@ def nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline):
     TO DO:
         - Add y_label param??
     """
-# set up basic plotting values and parameters
+    # set up basic plotting values and parameters (is there a better way to do this? similar to 'raster'?)
     data = df.dropna().values
     if df.ndim == 1:
         column_num = 1
@@ -39,21 +39,19 @@ def nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline):
         column_num = df.shape[1]
         labels = df.columns.values
 
-# make the basic figure with better default properties.
-    f, ax = plt.subplots(1, figsize=(column_num,5))
-    bp = plt.boxplot(data,
-                     showfliers=show_outliers,
-                     boxprops=dict(color='000000',linestyle='-',linewidth=2),
-                     capprops=dict(color='000000',linestyle='-',linewidth=2),
-                     flierprops=dict(linestyle='none',marker='.',markeredgecolor='000000',
-                                     markerfacecolor='000000',markersize=5),
-                     labels=labels,
-                     medianprops=dict(color='000000',linestyle='-',linewidth=4),
-                     widths=0.5,
-                     whis=[10,90],
-                     whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
+    # make the basic figure with better default properties.
+    bp = ax.boxplot(data,
+                    showfliers=show_outliers,
+                    boxprops=dict(color='000000',linestyle='-',linewidth=2),
+                    capprops=dict(color='000000',linestyle='-',linewidth=2),
+                    flierprops=dict(linestyle='none',marker='.',markeredgecolor='000000',markerfacecolor='000000',markersize=5),
+                    labels=labels,
+                    medianprops=dict(color='000000',linestyle='-',linewidth=4),
+                    widths=0.5,
+                    whis=[10,90],
+                    whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
 
-# reset the colors based on user input
+    # reset the colors based on preset rcParams (style sheet)
     colors = [i['color'] for i in plt.rcParams['axes.prop_cycle']]
     if medians_only:
         for i in range(column_num):
@@ -65,31 +63,31 @@ def nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline):
             plt.setp(bp['boxes'][i], color=color)
             plt.setp(bp['caps'][i*2], color=color)
             plt.setp(bp['caps'][i*2+1], color=color)
-
             plt.setp(bp['medians'][i], color=color)
             plt.setp(bp['whiskers'][i*2], color=color)
             plt.setp(bp['whiskers'][i*2+1], color=color)
             if show_outliers:
                 plt.setp(bp['fliers'][i], markerfacecolor=color, markeredgecolor=color)
 
-# add in an optional line
+    # add in an optional line
     for key, val in y_hline.items():
         plt.axhline(y=val,color='grey',linestyle='dotted')
 
-# make final changes to plot to clean it up and make it pretty
-    plt.xticks(rotation=45)
-#     NEED TO MAKE SURE THIS IS CALLED PROPERLY IN THE FINISHED VERSION!
+    # make final changes to plot to clean it up and make it pretty
+    ax.xaxis.set_ticklabels(labels, rotation=45)
+    # NEED TO MAKE SURE THIS IS CALLED PROPERLY IN THE FINISHED VERSION!
     simple_axis(ax)
-    return f, ax
+    return bp
 
-def scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, seed=0):
+def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, seed=0):
     """
     Creates a scatter column plot.
 
     Parameters
     ----------
+    ax: matplotlib ax object
     df: pandas DataFrame
-        Pandas Dataframe where each of the columns makes a separate scatter column plot. Column names will be used as x-axis labels (eventually).
+        Pandas Dataframe where each column makes a separate scatter column plot. Column names will be used as x-axis labels.
     alpha: float (0.0 through 1.0)
         Sets marker opacity. 0.0 = transparent through 1.0 = opaque.
     jitter: float (0.0 through 1.0, default=0.35)
@@ -103,9 +101,10 @@ def scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, seed
 
     TO DO:
     - add y_label param?
-    - fix jitter setting to keep perfectly consistent across plots
+    - add jitter scaling to keep perfectly consistent across plots
+    -
     """
-# set up basic plotting values and parameters
+    # set up basic plotting values and parameters (is there a better way to do this? similar to 'raster'?)
     np.random.seed(seed)
     data = df.values
     if df.ndim == 1:
@@ -115,24 +114,59 @@ def scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, seed
         column_num = df.shape[1]
         labels = df.columns.values
 
-    f, ax = plt.subplots(1, figsize=(column_num,5))
+    # make the basic figure and set properties.
     for i in range(column_num):
         if column_num == 1:
             y = data
         else:
             y = data[:,i]
         x = np.random.normal(i+1, jitter, size=len(y))
-        sp = plt.plot(x, y,
-                      alpha=alpha,
-                      linestyle='None',
-                      label=labels[i],
-                      marker='.',
-                      markersize=markersize)
+        sp = ax.plot(x,
+                     y,
+                     alpha=alpha,
+                     linestyle='None',
+                     label=labels[i],
+                     marker='.',
+                     markersize=markersize)
         if monocolor:
             plt.setp(sp[0], markeredgecolor=monocolor,markerfacecolor=monocolor)
 
+    # make properties compatible with nu_boxplot
     ax.set_xlim(0.5, column_num+0.5)
     ax.xaxis.set_ticks(np.arange(1, column_num+1))
     ax.xaxis.set_ticklabels(labels, rotation=45)
     simple_axis(ax)
-    return f, ax
+    return sp
+
+def raster(ax, df, color='00000'):
+    """
+    Creates a raster plot.
+
+    Parameters
+    ----------
+    ax: matplotlib ax object
+    df: pandas DataFrame
+        Pandas Dataframe where each column makes a separate raster plot.
+    color: any valid matplotlib color
+
+    Adapted from:
+    [1] https://scimusing.wordpress.com/2013/05/06/making-raster-plots-in-python-with-matplotlib/
+
+    TO DO:
+    - documentation
+    - y label?
+    - bottom up?
+    - dotted vertical line?
+    - line width?
+    """
+    if df.ndim == 1:
+        ras = ax.vlines(df.T.values, 0.5, 1.5, color=color)
+    else:
+        data = df.T.values
+        for i, sweep in enumerate(data):
+            ras = ax.vlines(sweep,i + 0.5, i + 1.5, color=color)
+    simple_axis(ax)
+    plt.ylim(0.5,len(data)+0.5)
+    plt.yticks(np.arange(1,data.shape[0]+1,1))
+    plt.gca().invert_yaxis()
+    return ras
