@@ -15,7 +15,7 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
 
     Parameters
     ----------
-    ax: matplotlib ax object
+    ax: matplotlib axes object
     df: pandas DataFrame
         Pandas Dataframe where each column makes a separate boxplot. Column names will be used as x-axis labels.
     medians_only: bool (default=False)
@@ -24,13 +24,14 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
     showfliers: bool (default=True)
         Turns outliers on or off.
     y_hline: dict or None (default=None)
-        Draws an arbitrary number of dotted horizontal lines at a user specified
-        y-values that spans the entire length of the figure.
+        Draws an arbitrary number of dotted horizontal lines at user specified y-value that spans the entire length of the figure.
         ex: string = <int or float>
             baseline = -50.0
 
     Return
     ------
+    bp: dict of matplolib objects
+        Contains all the necessary boxplot parameters, and when properly assigned to a matplotlib axes object will render your boxplot.
 
     TO DO:
         - Add y_label param??
@@ -57,7 +58,7 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
                     whis=[10,90],
                     whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
 
-    # reset the colors based on user input
+    # reset the colors based on style sheet currently in use
     colors = [i['color'] for i in mpl.rcParams['axes.prop_cycle']]
     if medians_only:
         for i in range(column_num):
@@ -90,7 +91,7 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
 
     Parameters
     ----------
-    ax: matplotlib ax object
+    ax: matplotlib axes object
     df: pandas DataFrame
         Pandas Dataframe where each column makes a separate scatter column plot. Column names will be used as x-axis labels.
     alpha: float (0.0 through 1.0)
@@ -104,10 +105,14 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
     seed:
         Sets the numpy.random.seed value that controls the jitter of the resulting plots. Same data + same seed = same figure.
 
+    Return
+    ------
+    sc: list of matplolib objects
+        Contains all the necessary scatterplot parameters, and when properly assigned to a matplotlib axes object will render your scatterplot.
+
     TO DO:
     - add y_label param?
     - add jitter scaling to keep perfectly consistent across plots
-    -
     """
     np.random.seed(seed)
     data = df.values
@@ -124,47 +129,58 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
         else:
             y = data[:,i]
         x = np.random.normal(i+1, jitter, size=len(y))
-        sp = ax.plot(x,y,
+        sc = ax.plot(x,y,
                      alpha=alpha,
                      linestyle='None',
                      label=labels[i],
                      marker='.',
                      markersize=markersize)
         if monocolor:
-            mpl.artist.setp(sp[0], markeredgecolor=monocolor,markerfacecolor=monocolor)
+            mpl.artist.setp(sc[0], markeredgecolor=monocolor,markerfacecolor=monocolor)
     ax.set_xlim(0.5, column_num+0.5)
     ax.xaxis.set_ticks(np.arange(1, column_num+1))
     ax.xaxis.set_ticklabels(labels, rotation=45)
     simple_axis(ax)
-    return sp
+    return sc
 
-def raster(ax, df, color='00000'):
+def raster(ax, df, color='00000', **x_vline):
     """
-    Creates a raster plot.
+    Creates a raster plot that reads top-down and left-right.
 
     Parameters
     ----------
     ax: matplotlib ax object
     df: pandas DataFrame
-        Pandas Dataframe where each column makes a separate raster plot.
+        Pandas Dataframe where each column makes a separate raster plot. THE PLOT WILL READ IN THE EXACT SAME MANNER AS 'df.T' LOOKS.
     color: any valid matplotlib color
+    x_vline: dict or None (default=None)
+        Draws an arbitrary number of dotted horizontal lines at user specified y-value that spans the entire length of the figure.
 
-    Adapted from:
+    Return
+    ------
+    ras: matplotlib.collections.LineCollection
+        Contains all the necessary raster parameters, and when properly assigned to a matplotlib axes object will render your raster plot.
+
+    Heavily adapted from:
     [1] https://scimusing.wordpress.com/2013/05/06/making-raster-plots-in-python-with-matplotlib/
 
     TO DO:
-    - documentation
     - y label?
-    - bottom up?
-    - dotted vertical line?
+    - bottom up option?
     - line width?
     """
     if df.ndim == 1:
-        ras = ax.vlines(df.T.values, 0.5, 1.5, color=color)
+        ras = ax.vlines(df.T.values,0.5,1.5,color=color)
     else:
         data = df.T.values
         for i, sweep in enumerate(data):
-            ras = ax.vlines(sweep, i + 0.5, i + 1.5, color=color)
+            ras = ax.vlines(sweep,i+0.5,i+1.5,color=color)
+
+    # add in an optional line
+    for key, val in x_vline.items():
+        ax.axvline(x=val,color='grey',linestyle='dotted')
+
+    # set up the axis and labels so that they properly label sweeps
     ax.set_ylim(0.5,len(data)+0.5)
     ax.set_yticks(np.arange(1,data.shape[0]+1,1))
     ax.invert_yaxis()
