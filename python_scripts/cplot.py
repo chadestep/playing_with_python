@@ -16,7 +16,7 @@ def simple_axis(ax):
     Parameters
     ----------
     ax:
-        matplotlib.axes._subplots.AxesSubplot.
+        Matplotlib axes object.
     """
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -30,7 +30,7 @@ def simple_figure(f):
     Parameters
     ----------
     f:
-        matplotlib.figure.Figure object.
+        Matplotlib figure object.
     """
     num_ax = len(f.axes)
     if num_ax == 1:
@@ -49,10 +49,10 @@ def clean_axis(ax, y_units, **y_hline):
     Parameters
     ----------
     ax:
-        matplotlib.axes._subplots.AxesSubplot.
+        Matplotlib axes object.
     y_units: string
         The units you want listed in your legend for the y_hline(s).
-    y_hline: dict or None (default)
+    y_hline: key-value pair or None (default)
         Draws an arbitrary number of dotted horizontal lines at a user specified y-values that spans the entire length of the figure.
         ex: string = <int or float>
             baseline = -50.0
@@ -73,10 +73,10 @@ def clean_figure(f, y_units, **y_hline):
     Parameters
     ----------
     f:
-        matplotlib.figure.Figure object.
+        Matplotlib figure object.
     y_units: string
         The units you want listed in your legend for the y_hline(s).
-    y_hline: dict or None (default)
+    y_hline: key-value pair or None (default)
         Draws an arbitrary number of dotted horizontal lines at a user specified y-values that spans the entire length of the figure.
         ex: string = <int or float>
             baseline = -50.0
@@ -102,7 +102,7 @@ def scaleandlegend(f, x_scale, x_units, y_scale, y_units):
     Parameters
     ----------
     f:
-        matplotlib.figure.Figure object.
+        Matplotlib figure object.
     x_scale: int or float
         User specified length of the scale bar.
     x_units: string
@@ -129,7 +129,8 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
 
     Parameters
     ----------
-    ax: matplotlib axes object
+    ax:
+        matplotlib axes object
     df: pandas DataFrame
         Pandas Dataframe where each column makes a separate boxplot. Column names will be used as x-axis labels.
     medians_only: bool (default=False)
@@ -137,7 +138,7 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
         but if True only changes the color of the median bar.
     showfliers: bool (default=True)
         Turns outliers on or off.
-    y_hline: dict or None (default=None)
+    y_hline: key-value pair or None (default=None)
         Draws an arbitrary number of dotted horizontal lines at user specified y-value that spans the entire length of the figure.
         ex: string = <int or float>
             baseline = -50.0
@@ -158,7 +159,6 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
     else:
         column_num = df.shape[1]
         labels = df.columns.values
-
     # make the basic figure with better default properties.
     bp = ax.boxplot(data,
                     showfliers=show_outliers,
@@ -171,7 +171,6 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
                     widths=0.5,
                     whis=[10,90],
                     whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
-
     # reset the colors based on style sheet currently in use
     colors = [i['color'] for i in mpl.rcParams['axes.prop_cycle']]
     if medians_only:
@@ -189,11 +188,9 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
             mpl.artist.setp(bp['whiskers'][i*2+1], color=color)
             if show_outliers:
                 mpl.artist.setp(bp['fliers'][i], markerfacecolor=color, markeredgecolor=color)
-
     # add in an optional line
     for key, val in y_hline.items():
         ax.axhline(y=val,color='grey',linestyle='dotted')
-
     # make final changes to plot to clean it up and make it pretty
     ax.xaxis.set_ticklabels(labels, rotation=45)
     simple_axis(ax)
@@ -205,7 +202,8 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
 
     Parameters
     ----------
-    ax: matplotlib axes object
+    ax:
+        Matplotlib axes object
     df: pandas DataFrame
         Pandas Dataframe where each column makes a separate scatter column plot. Column names will be used as x-axis labels.
     alpha: float (0.0 through 1.0)
@@ -263,11 +261,12 @@ def raster(ax, df, color='00000', **x_vline):
 
     Parameters
     ----------
-    ax: matplotlib ax object
+    ax:
+        Matplotlib ax object
     df: pandas DataFrame
         Pandas Dataframe where each column makes a separate raster plot. THE PLOT WILL READ IN THE EXACT SAME MANNER AS 'df.T' LOOKS.
     color: any valid matplotlib color
-    x_vline: dict or None (default=None)
+    x_vline: key-value pair or None (default=None)
         Draws an arbitrary number of dotted horizontal lines at user specified y-value that spans the entire length of the figure.
 
     Returns
@@ -315,7 +314,7 @@ def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline)
         but if True only changes the color of the median bar.
     showfliers: bool (default=True)
         Turns outliers on or off.
-    y_hline: dict or None (default=None)
+    y_hline: key-value pair or None (default=None)
         Draws an arbitrary number of dotted horizontal lines at a user specified
         y-values that spans the entire length of the figure.
         ex: string = <int or float>
@@ -339,7 +338,6 @@ def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline)
     else:
         column_num = df.shape[1]
         labels = df.columns.values
-
     # make the basic figure with better default properties.
     f, ax = plt.subplots(1, figsize=(column_num,5))
     bp = plt.boxplot(data,
@@ -353,7 +351,6 @@ def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline)
                      widths=0.5,
                      whis=[10,90],
                      whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
-
     # reset the colors based on user input
     colors = [i['color'] for i in plt.rcParams['axes.prop_cycle']]
     if medians_only:
@@ -371,11 +368,9 @@ def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline)
             plt.setp(bp['whiskers'][i*2+1], color=color)
             if show_outliers:
                 plt.setp(bp['fliers'][i], markerfacecolor=color, markeredgecolor=color)
-
     # add in an optional line
     for key, val in y_hline.items():
         plt.axhline(y=val,color='grey',linestyle='dotted')
-
     # make final changes to plot to clean it up and make it pretty
     plt.xticks(rotation=45)
     simple_axis(ax)
@@ -387,7 +382,8 @@ def standalone_scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=
 
     Parameters
     ----------
-    ax: matplotlib axes object
+    ax:
+        Matplotlib axes object
     df: pandas DataFrame
         Pandas Dataframe where each column makes a separate scatter column plot. Column names will be used as x-axis labels.
     alpha: float (0.0 through 1.0)
@@ -420,7 +416,6 @@ def standalone_scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=
     else:
         column_num = df.shape[1]
         labels = df.columns.values
-
     # crete an appropriately sized figure for the dataset
     f, ax = plt.subplots(1, figsize=(column_num,5))
     for i in range(column_num):
@@ -437,7 +432,6 @@ def standalone_scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=
                       markersize=markersize)
         if monocolor:
             plt.setp(sp[0], markeredgecolor=monocolor,markerfacecolor=monocolor)
-
     # make final changes to plot to clean it up and make it pretty
     ax.set_xlim(0.5, column_num+0.5)
     ax.xaxis.set_ticks(np.arange(1, column_num+1))
