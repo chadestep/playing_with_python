@@ -111,6 +111,9 @@ def scaleandlegend(f, x_scale, x_units, y_scale, y_units):
         User specified length of the scale bar.
     y_units: string
         Y-axis units used in the figure legend.
+
+    TODO:
+    - modify this function to work on specific axes?
     """
     ax = f.axes[-1]
     x_min,x_max = ax.get_xlim()[0],ax.get_xlim()[1]
@@ -148,11 +151,10 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
     bp: dict of matplolib objects
         Contains all the necessary boxplot parameters, and when properly assigned to a matplotlib axes object will render your boxplot.
 
-    TO DO:
-        - Add y_label param??
+    TODO:
+    - Add y_label param??
     """
     # set up basic plotting values and parameters
-    data = df.dropna().values
     if df.ndim == 1:
         column_num = 1
         labels = [df.name]
@@ -160,34 +162,36 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
         column_num = df.shape[1]
         labels = df.columns.values
     # make the basic figure with better default properties.
-    bp = ax.boxplot(data,
-                    showfliers=show_outliers,
+    # first line are pd.df.boxplot specific params, then general mpl params
+    bp = df.boxplot(ax=ax,return_type='dict',rot=45,grid=False,
                     boxprops=dict(color='000000',linestyle='-',linewidth=2),
                     capprops=dict(color='000000',linestyle='-',linewidth=2),
-                    flierprops=dict(linestyle='none',marker='.',markeredgecolor='000000',
-                                    markerfacecolor='000000',markersize=5),
-                    labels=labels,
+                    flierprops=dict(linestyle='none',marker='.',markeredgecolor='000000',markerfacecolor='000000',markersize=5),
                     medianprops=dict(color='000000',linestyle='-',linewidth=4),
+                    showfliers=show_outliers,
                     widths=0.5,
                     whis=[10,90],
                     whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
-    # reset the colors based on style sheet currently in use
+    # reset the colors based on user input
     colors = [i['color'] for i in mpl.rcParams['axes.prop_cycle']]
     if medians_only:
         for i in range(column_num):
             color = colors[i]
-            mpl.artist.setp(bp['medians'][i], color=color)
+            mpl.artist.setp(bp['boxes'][i],color='000000')
+            mpl.artist.setp(bp['medians'][i],color=color)
+            mpl.artist.setp(bp['whiskers'][i*2],color='000000')
+            mpl.artist.setp(bp['whiskers'][i*2+1],color='000000')
     else:
         for i in range(column_num):
             color = colors[i]
-            mpl.artist.setp(bp['boxes'][i], color=color)
-            mpl.artist.setp(bp['caps'][i*2], color=color)
-            mpl.artist.setp(bp['caps'][i*2+1], color=color)
-            mpl.artist.setp(bp['medians'][i], color=color)
-            mpl.artist.setp(bp['whiskers'][i*2], color=color)
-            mpl.artist.setp(bp['whiskers'][i*2+1], color=color)
+            mpl.artist.setp(bp['boxes'][i],color=color)
+            mpl.artist.setp(bp['caps'][i*2],color=color)
+            mpl.artist.setp(bp['caps'][i*2+1],color=color)
+            mpl.artist.setp(bp['medians'][i],color=color)
+            mpl.artist.setp(bp['whiskers'][i*2],color=color)
+            mpl.artist.setp(bp['whiskers'][i*2+1],color=color)
             if show_outliers:
-                mpl.artist.setp(bp['fliers'][i], markerfacecolor=color, markeredgecolor=color)
+                mpl.artist.setp(bp['fliers'][i],markerfacecolor=color,markeredgecolor=color)
     # add in an optional line
     for key, val in y_hline.items():
         ax.axhline(y=val,color='grey',linestyle='dotted')
@@ -222,10 +226,11 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
     sc: list of matplolib objects
         Contains all the necessary scatterplot parameters, and when properly assigned to a matplotlib axes object will render your scatterplot.
 
-    TO DO:
+    TODO:
     - add y_label param?
     - add jitter scaling to keep perfectly consistent across plots
     """
+    # set up basic plotting values and parameters
     np.random.seed(seed)
     data = df.values
     if df.ndim == 1:
@@ -234,7 +239,7 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
     else:
         column_num = df.shape[1]
         labels = df.columns.values
-
+    # create the plot
     for i in range(column_num):
         if column_num == 1:
             y = data
@@ -249,6 +254,7 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
                      markersize=markersize)
         if monocolor:
             mpl.artist.setp(sc[0], markeredgecolor=monocolor,markerfacecolor=monocolor)
+    # make final changes to plot to clean it up and make it pretty
     ax.set_xlim(0.5, column_num+0.5)
     ax.xaxis.set_ticks(np.arange(1, column_num+1))
     ax.xaxis.set_ticklabels(labels, rotation=45)
@@ -277,10 +283,11 @@ def raster(ax, df, color='00000', **x_vline):
     Heavily adapted from:
     [1] https://scimusing.wordpress.com/2013/05/06/making-raster-plots-in-python-with-matplotlib/
 
-    TO DO:
+    TODO:
     - y label?
     - bottom up option?
-    - line width?
+    - line weight?
+    - dotted line color/weight?
     """
     if df.ndim == 1:
         ras = ax.vlines(df.T.values,0.5,1.5,color=color)
@@ -288,11 +295,9 @@ def raster(ax, df, color='00000', **x_vline):
         data = df.T.values
         for i, sweep in enumerate(data):
             ras = ax.vlines(sweep,i+0.5,i+1.5,color=color)
-
     # add in an optional line
     for key, val in x_vline.items():
         ax.axvline(x=val,color='grey',linestyle='dotted')
-
     # set up the axis and labels so that they properly label sweeps
     ax.set_ylim(0.5,len(data)+0.5)
     ax.set_yticks(np.arange(1,data.shape[0]+1,1))
@@ -327,11 +332,10 @@ def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline)
     ax:
         Matplotlib axes object.
 
-    TO DO:
-        - Add ylabel?
+    TODO:
+    - Add ylabel?
     """
     # set up basic plotting values and parameters
-    data = df.dropna().values
     if df.ndim == 1:
         column_num = 1
         labels = [df.name]
@@ -339,40 +343,43 @@ def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline)
         column_num = df.shape[1]
         labels = df.columns.values
     # make the basic figure with better default properties.
+    # first line are pd.df.boxplot specific params, then general mpl params
+    # also, boxplot 'color' params do not appear to be working correctly...
     f, ax = plt.subplots(1, figsize=(column_num,5))
-    bp = plt.boxplot(data,
-                     showfliers=show_outliers,
-                     boxprops=dict(color='000000',linestyle='-',linewidth=2),
-                     capprops=dict(color='000000',linestyle='-',linewidth=2),
-                     flierprops=dict(linestyle='none',marker='.',markeredgecolor='000000',
-                                     markerfacecolor='000000',markersize=5),
-                     labels=labels,
-                     medianprops=dict(color='000000',linestyle='-',linewidth=4),
-                     widths=0.5,
-                     whis=[10,90],
-                     whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
+    bp = df.boxplot(ax=ax,return_type='dict',rot=45,grid=False,
+                    boxprops=dict(color='000000',linestyle='-',linewidth=2),
+                    capprops=dict(color='000000',linestyle='-',linewidth=2),
+                    flierprops=dict(linestyle='none',marker='.',markeredgecolor='000000',markerfacecolor='000000',markersize=5),
+                    medianprops=dict(color='000000',linestyle='-',linewidth=4),
+                    showfliers=show_outliers,
+                    widths=0.5,
+                    whis=[10,90],
+                    whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
     # reset the colors based on user input
-    colors = [i['color'] for i in plt.rcParams['axes.prop_cycle']]
+    colors = [i['color'] for i in mpl.rcParams['axes.prop_cycle']]
     if medians_only:
         for i in range(column_num):
             color = colors[i]
-            plt.setp(bp['medians'][i], color=color)
+            mpl.artist.setp(bp['boxes'][i],color='000000')
+            mpl.artist.setp(bp['medians'][i],color=color)
+            mpl.artist.setp(bp['whiskers'][i*2],color='000000')
+            mpl.artist.setp(bp['whiskers'][i*2+1],color='000000')
     else:
         for i in range(column_num):
             color = colors[i]
-            plt.setp(bp['boxes'][i], color=color)
-            plt.setp(bp['caps'][i*2], color=color)
-            plt.setp(bp['caps'][i*2+1], color=color)
-            plt.setp(bp['medians'][i], color=color)
-            plt.setp(bp['whiskers'][i*2], color=color)
-            plt.setp(bp['whiskers'][i*2+1], color=color)
+            mpl.artist.setp(bp['boxes'][i],color=color)
+            mpl.artist.setp(bp['caps'][i*2],color=color)
+            mpl.artist.setp(bp['caps'][i*2+1],color=color)
+            mpl.artist.setp(bp['medians'][i],color=color)
+            mpl.artist.setp(bp['whiskers'][i*2],color=color)
+            mpl.artist.setp(bp['whiskers'][i*2+1],color=color)
             if show_outliers:
-                plt.setp(bp['fliers'][i], markerfacecolor=color, markeredgecolor=color)
+                mpl.artist.setp(bp['fliers'][i],markerfacecolor=color,markeredgecolor=color)
     # add in an optional line
     for key, val in y_hline.items():
-        plt.axhline(y=val,color='grey',linestyle='dotted')
+        ax.axhline(y=val,color='grey',linestyle='dotted')
     # make final changes to plot to clean it up and make it pretty
-    plt.xticks(rotation=45)
+    ax.xaxis.set_ticklabels(labels, rotation=45) # May not be necessary anymore
     simple_axis(ax)
     return f, ax
 
@@ -404,7 +411,7 @@ def standalone_scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=
     ax:
         Matplotlib axes object.
 
-    TO DO:
+    TODO:
     - add y_label param?
     """
     # set up basic plotting values and parameters
