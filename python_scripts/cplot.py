@@ -153,6 +153,7 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
 
     TODO:
     - Add y_label param??
+    - Add color cycler since this just stops at 11...
     """
     # set up basic plotting values and parameters
     if df.ndim == 1:
@@ -227,8 +228,9 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
         Contains all the necessary scatterplot parameters, and when properly assigned to a matplotlib axes object will render your scatterplot.
 
     TODO:
-    - add y_label param?
-    - add jitter scaling to keep perfectly consistent across plots
+    - Add y_label param?
+    - Add jitter scaling to keep perfectly consistent across plots
+    - Add color cycler since this just stops at 11...
     """
     # set up basic plotting values and parameters
     np.random.seed(seed)
@@ -334,6 +336,7 @@ def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline)
 
     TODO:
     - Add ylabel?
+    - Add color cycler since this just stops at 11...
     """
     # set up basic plotting values and parameters
     if df.ndim == 1:
@@ -412,7 +415,8 @@ def standalone_scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=
         Matplotlib axes object.
 
     TODO:
-    - add y_label param?
+    - Add y_label param?
+    - Add color cycler since this just stops at 11...
     """
     # set up basic plotting values and parameters
     np.random.seed(seed)
