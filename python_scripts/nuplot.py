@@ -95,7 +95,7 @@ def clean_figure(f, y_units, **y_hline):
             for key, val in y_hline.items():
                 f.axes[i].axhline(y=val,color='grey',linestyle='dotted',label='{0}: {1} {2}'.format(key,val,y_units))
 
-def scaleandlegend(f, x_scale, x_units, y_scale, y_units):
+def nu_legend(f, x_scale, x_units, y_scale, y_units):
     """
     Add x and y scale bars to the bottom right of the only/last subplot of a figure and a legend outside of the figure.
 
@@ -201,7 +201,7 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
     simple_axis(ax)
     return bp
 
-def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, seed=0):
+def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, seed=0):
     """
     Creates a scatter column plot.
 
@@ -263,7 +263,7 @@ def scatter_col(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, 
     simple_axis(ax)
     return sc
 
-def raster(ax, df, color='00000', **x_vline):
+def nu_raster(ax, df, color='00000', **x_vline):
     """
     Creates a raster plot that reads top-down and left-right.
 
@@ -383,69 +383,5 @@ def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline)
         ax.axhline(y=val,color='grey',linestyle='dotted')
     # make final changes to plot to clean it up and make it pretty
     ax.xaxis.set_ticklabels(labels, rotation=45) # May not be necessary anymore
-    simple_axis(ax)
-    return f, ax
-
-def standalone_scatter_col(df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, seed=0):
-    """
-    Creates a scatter column figure.
-
-    Parameters
-    ----------
-    ax:
-        Matplotlib axes object
-    df: pandas DataFrame
-        Pandas Dataframe where each column makes a separate scatter column plot. Column names will be used as x-axis labels.
-    alpha: float (0.0 through 1.0)
-        Sets marker opacity. 0.0 = transparent through 1.0 = opaque.
-    jitter: float (0.0 through 1.0, default=0.35)
-        Sets the amount of jitter in the column data. The default value keeps the scatter to roughly between the whiskers. 0.0 = no jitter through 1.0 = jitter the width of the plot. Can technically go past 1.0, but at that point you lose data from the figure, so do not do that.
-    markersize: float
-        Sets the size of the scatter plot marker.
-    monocolor: any matplotlib color (default=False)
-        Set all scatter plot objects to the specificed color.
-    seed:
-        Sets the numpy.random.seed value that controls the jitter of the resulting plots. Same data + same seed = same figure.
-
-    Returns
-    -------
-    f:
-        Matplotlib figure object.
-    ax:
-        Matplotlib axes object.
-
-    TODO:
-    - Add y_label param?
-    - Add color cycler since this just stops at 11...
-    """
-    # set up basic plotting values and parameters
-    np.random.seed(seed)
-    data = df.values
-    if df.ndim == 1:
-        column_num = 1
-        labels = [df.name]
-    else:
-        column_num = df.shape[1]
-        labels = df.columns.values
-    # crete an appropriately sized figure for the dataset
-    f, ax = plt.subplots(1, figsize=(column_num,5))
-    for i in range(column_num):
-        if column_num == 1:
-            y = data
-        else:
-            y = data[:,i]
-        x = np.random.normal(i+1, jitter, size=len(y))
-        sp = plt.plot(x, y,
-                      alpha=alpha,
-                      linestyle='None',
-                      label=labels[i],
-                      marker='.',
-                      markersize=markersize)
-        if monocolor:
-            plt.setp(sp[0], markeredgecolor=monocolor,markerfacecolor=monocolor)
-    # make final changes to plot to clean it up and make it pretty
-    ax.set_xlim(0.5, column_num+0.5)
-    ax.xaxis.set_ticks(np.arange(1, column_num+1))
-    ax.xaxis.set_ticklabels(labels, rotation=45)
     simple_axis(ax)
     return f, ax
