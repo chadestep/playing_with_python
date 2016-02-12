@@ -6,6 +6,9 @@ __author__ = "Chad Estep (chadestep@gmail.com)"
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from cycler import cycler
+from itertools import cycle
+
 # using my style not necessary, but highly encouraged
 plt.style.use('estep_style')
 
@@ -126,7 +129,7 @@ def nu_legend(f, x_scale, x_units, y_scale, y_units):
     ax.axvline(x=x_max,ymin=0,ymax=vline_max,color='black',lw=2,label='y: {0} {1}'.format(y_scale,y_units))
     plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0, frameon=False)
 
-def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
+def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_hline):
     """
     Makes a much improved boxplot.
 
@@ -136,6 +139,9 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
         matplotlib axes object
     df: pandas DataFrame
         Pandas Dataframe where each column makes a separate boxplot. Column names will be used as x-axis labels.
+    cmap:
+        Any valid call to a maptlotlib colormap.
+        ex: mpl.cm.summer, mpl.cm.afmhot
     medians_only: bool (default=False)
         Default changes the entire boxplot the new color,
         but if True only changes the color of the median bar.
@@ -151,9 +157,10 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
     bp: dict of matplolib objects
         Contains all the necessary boxplot parameters, and when properly assigned to a matplotlib axes object will render your boxplot.
 
-    TODO:
+    TO DO:
     - Add y_label param??
-    - Add color cycler since this just stops at 11...
+    - Make easier to call cmaps (would like to just call 'summer' or 'hot')
+      --> cmap = 'plt.cm.{0}'.format(cmap), but actually work
     """
     # set up basic plotting values and parameters
     if df.ndim == 1:
@@ -173,18 +180,21 @@ def nu_boxplot(ax, df, medians_only=False, show_outliers=True, **y_hline):
                     widths=0.5,
                     whis=[10,90],
                     whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
-    # reset the colors based on user input
-    colors = [i['color'] for i in mpl.rcParams['axes.prop_cycle']]
+    # make color cycler and reset the colors based on user input
+    if cmap:
+        color_idx = np.linspace(0,1,column_num)
+        color_cycler = cycler('color',[cmap(color_idx[i]) for i in range(column_num)])
+    else:
+        color_cycler = cycler('color',[i['color'] for i in mpl.rcParams['axes.prop_cycle']])
     if medians_only:
-        for i in range(column_num):
-            color = colors[i]
+        for i, color_dict in zip(range(column_num), cycle(color_cycler)):
             mpl.artist.setp(bp['boxes'][i],color='000000')
-            mpl.artist.setp(bp['medians'][i],color=color)
+            mpl.artist.setp(bp['medians'][i],**color_dict)
             mpl.artist.setp(bp['whiskers'][i*2],color='000000')
             mpl.artist.setp(bp['whiskers'][i*2+1],color='000000')
     else:
-        for i in range(column_num):
-            color = colors[i]
+        for i, color_dict in zip(range(column_num), cycle(color_cycler)):
+            color = color_dict['color']
             mpl.artist.setp(bp['boxes'][i],color=color)
             mpl.artist.setp(bp['caps'][i*2],color=color)
             mpl.artist.setp(bp['caps'][i*2+1],color=color)
