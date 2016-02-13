@@ -194,6 +194,7 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
             mpl.artist.setp(bp['whiskers'][i*2+1],color='000000')
     else:
         for i, color_dict in zip(range(column_num), cycle(color_cycler)):
+            # need to set color at beginning so it doesn't cycle with every line
             color = color_dict['color']
             mpl.artist.setp(bp['boxes'][i],color=color)
             mpl.artist.setp(bp['caps'][i*2],color=color)
