@@ -4,13 +4,14 @@ __author__ = "Chad Estep (chadestep@gmail.com)"
 """ Plotting helper functions for publication quality figures """
 
 import matplotlib as mpl
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+from matplotlib.pyplot import legend
 import numpy as np
 from cycler import cycler
 from itertools import cycle
 
 # using my style not necessary, but highly encouraged
-plt.style.use('estep_style')
+mpl.style.use('estep_style')
 
 def simple_axis(ax):
     """
@@ -127,7 +128,7 @@ def nu_legend(f, x_scale, x_units, y_scale, y_units):
     vline_max = (y_scale/y_range)
     ax.axhline(y=y_min,xmin=(1-hline_min),xmax=1,color='black',lw=2,label='x: {0} {1}'.format(x_scale,x_units))
     ax.axvline(x=x_max,ymin=0,ymax=vline_max,color='black',lw=2,label='y: {0} {1}'.format(y_scale,y_units))
-    plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0, frameon=False)
+    legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0, frameon=False)
 
 def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_hline):
     """
@@ -160,7 +161,7 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
     TO DO:
     - Add y_label param??
     - Make easier to call cmaps (would like to just call 'summer' or 'hot')
-      --> cmap = 'plt.cm.{0}'.format(cmap), but actually work
+      --> cmap = 'mpl.cm.{0}'.format(cmap), but actually work
     """
     # set up basic plotting values and parameters
     if df.ndim == 1:
@@ -317,82 +318,3 @@ def nu_raster(ax, df, color='00000', **x_vline):
     ax.invert_yaxis()
     simple_axis(ax)
     return ras
-
-def standalone_nu_boxplot(df, medians_only=False, show_outliers=True, **y_hline):
-    """
-    Makes a much improved boxplot.
-
-    Parameters
-    ----------
-    df: pandas DataFrame
-        Pandas Dataframe where each of the columns makes a separate boxplot.
-        Column names will be used as boxplot labels.
-    medians_only: bool (default=False)
-        Default changes the entire boxplot the new color,
-        but if True only changes the color of the median bar.
-    showfliers: bool (default=True)
-        Turns outliers on or off.
-    y_hline: key-value pair or None (default=None)
-        Draws an arbitrary number of dotted horizontal lines at a user specified
-        y-values that spans the entire length of the figure.
-        ex: string = <int or float>
-            baseline = -50.0
-
-    Returns
-    -------
-    f:
-        Matplotlib figure object.
-    ax:
-        Matplotlib axes object.
-
-    TODO:
-    - Add ylabel?
-    - Add color cycler since this just stops at 11...
-    """
-    # set up basic plotting values and parameters
-    if df.ndim == 1:
-        column_num = 1
-        labels = [df.name]
-    else:
-        column_num = df.shape[1]
-        labels = df.columns.values
-    # make the basic figure with better default properties.
-    # first line are pd.df.boxplot specific params, then general mpl params
-    # also, boxplot 'color' params do not appear to be working correctly...
-    f, ax = plt.subplots(1, figsize=(column_num,5))
-    bp = df.boxplot(ax=ax,return_type='dict',rot=45,grid=False,
-                    boxprops=dict(color='000000',linestyle='-',linewidth=2),
-                    capprops=dict(color='000000',linestyle='-',linewidth=2),
-                    flierprops=dict(linestyle='none',marker='.',markeredgecolor='000000',markerfacecolor='000000',markersize=5),
-                    medianprops=dict(color='000000',linestyle='-',linewidth=4),
-                    showfliers=show_outliers,
-                    widths=0.5,
-                    whis=[10,90],
-                    whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
-    # reset the colors based on user input
-    colors = [i['color'] for i in mpl.rcParams['axes.prop_cycle']]
-    if medians_only:
-        for i in range(column_num):
-            color = colors[i]
-            mpl.artist.setp(bp['boxes'][i],color='000000')
-            mpl.artist.setp(bp['medians'][i],color=color)
-            mpl.artist.setp(bp['whiskers'][i*2],color='000000')
-            mpl.artist.setp(bp['whiskers'][i*2+1],color='000000')
-    else:
-        for i in range(column_num):
-            color = colors[i]
-            mpl.artist.setp(bp['boxes'][i],color=color)
-            mpl.artist.setp(bp['caps'][i*2],color=color)
-            mpl.artist.setp(bp['caps'][i*2+1],color=color)
-            mpl.artist.setp(bp['medians'][i],color=color)
-            mpl.artist.setp(bp['whiskers'][i*2],color=color)
-            mpl.artist.setp(bp['whiskers'][i*2+1],color=color)
-            if show_outliers:
-                mpl.artist.setp(bp['fliers'][i],markerfacecolor=color,markeredgecolor=color)
-    # add in an optional line
-    for key, val in y_hline.items():
-        ax.axhline(y=val,color='grey',linestyle='dotted')
-    # make final changes to plot to clean it up and make it pretty
-    ax.xaxis.set_ticklabels(labels, rotation=45) # May not be necessary anymore
-    simple_axis(ax)
-    return f, ax
