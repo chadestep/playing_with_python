@@ -237,7 +237,6 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, s
     TODO:
     - Add y_label param?
     - Add jitter scaling to keep perfectly consistent across plots
-    - Add color cycler since this just stops at 11...
     """
     # set up basic plotting values and parameters
     np.random.seed(seed)
@@ -254,7 +253,10 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, s
             y = data
         else:
             y = data[:,i]
-        x = np.random.normal(i+1, jitter, size=len(y))
+        if jitter == 0:
+            x = [i+1]*len(y)
+        else:
+            x = np.random.normal(i+1, jitter, size=len(y))
         sc = ax.plot(x,y,
                      alpha=alpha,
                      linestyle='None',
