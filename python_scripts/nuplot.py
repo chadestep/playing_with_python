@@ -4,12 +4,10 @@ __author__ = "Chad Estep (chadestep@gmail.com)"
 """ Plotting helper functions for publication quality figures """
 
 import matplotlib as mpl
-# import matplotlib.pyplot as plt
 from matplotlib.pyplot import legend
 import numpy as np
 from cycler import cycler
 from itertools import cycle
-
 # using my style not necessary, but highly encouraged
 mpl.style.use('estep_style')
 
@@ -140,9 +138,8 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
         matplotlib axes object
     df: pandas DataFrame
         Pandas Dataframe where each column makes a separate boxplot. Column names will be used as x-axis labels.
-    cmap:
-        Any valid call to a maptlotlib colormap.
-        ex: mpl.cm.summer, mpl.cm.afmhot
+    cmap: string (or direct call)
+        Any valid matplotlib colormap (ex: 'afmhot' or 'viridis'). Can also call through direct mpl.cm.<colormap_name>.
     medians_only: bool (default=False)
         Default changes the entire boxplot the new color,
         but if True only changes the color of the median bar.
@@ -160,8 +157,6 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
 
     TO DO:
     - Add y_label param??
-    - Make easier to call cmaps (would like to just call 'summer' or 'hot')
-      --> cmap = 'mpl.cm.{0}'.format(cmap), but actually work
     """
     # set up basic plotting values and parameters
     if df.ndim == 1:
@@ -184,7 +179,7 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
     # make color cycler and reset the colors based on user input
     if cmap:
         color_idx = np.linspace(0,1,column_num)
-        color_cycler = cycler('color',[cmap(color_idx[i]) for i in range(column_num)])
+        color_cycler = cycler('color',[mpl.cm.get_cmap(cmap)(color_idx[i]) for i in range(column_num)])
     else:
         color_cycler = cycler('color',[i['color'] for i in mpl.rcParams['axes.prop_cycle']])
     if medians_only:
