@@ -157,6 +157,7 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
 
     TO DO:
     - Add y_label param??
+    - Add option for specific colors (add to scatter?)
     """
     # set up basic plotting values and parameters
     if df.ndim == 1:
@@ -180,6 +181,8 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
     if cmap:
         color_idx = np.linspace(0,1,column_num)
         color_cycler = cycler('color',[mpl.cm.get_cmap(cmap)(color_idx[i]) for i in range(column_num)])
+    # elif color_list:
+        # color_cycler = cycler('color',color_list)
     else:
         color_cycler = cycler('color',[i['color'] for i in mpl.rcParams['axes.prop_cycle']])
     if medians_only:
