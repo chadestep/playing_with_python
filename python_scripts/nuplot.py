@@ -128,7 +128,7 @@ def nu_legend(f, x_scale, x_units, y_scale, y_units):
     ax.axvline(x=x_max,ymin=0,ymax=vline_max,color='black',lw=2,label='y: {0} {1}'.format(y_scale,y_units))
     legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0, frameon=False)
 
-def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_hline):
+def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, show_outliers=True, **y_hline):
     """
     Makes a much improved boxplot.
 
@@ -140,6 +140,8 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
         Pandas Dataframe where each column makes a separate boxplot. Column names will be used as x-axis labels.
     cmap: string (or direct call)
         Any valid matplotlib colormap (ex: 'afmhot' or 'viridis'). Can also call through direct mpl.cm.<colormap_name>.
+    color_list: list
+        List of valid matplotlib colors. Colors will be repeated if not enough are supplied.
     medians_only: bool (default=False)
         Default changes the entire boxplot the new color,
         but if True only changes the color of the median bar.
@@ -177,14 +179,15 @@ def nu_boxplot(ax, df, cmap=False, medians_only=False, show_outliers=True, **y_h
                     widths=0.5,
                     whis=[10,90],
                     whiskerprops=dict(color='000000',linestyle='-',linewidth=2))
-    # make color cycler and reset the colors based on user input
+    # make color cycler
     if cmap:
         color_idx = np.linspace(0,1,column_num)
         color_cycler = cycler('color',[mpl.cm.get_cmap(cmap)(color_idx[i]) for i in range(column_num)])
-    # elif color_list:
-        # color_cycler = cycler('color',color_list)
+    elif color_list:
+        color_cycler = cycler('color',color_list)
     else:
         color_cycler = cycler('color',[i['color'] for i in mpl.rcParams['axes.prop_cycle']])
+    # start coloring what needs to be colored
     if medians_only:
         for i, color_dict in zip(range(column_num), cycle(color_cycler)):
             mpl.artist.setp(bp['boxes'][i],color='000000')
