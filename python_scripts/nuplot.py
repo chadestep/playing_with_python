@@ -128,7 +128,7 @@ def nu_legend(f, x_scale, x_units, y_scale, y_units):
     ax.axvline(x=x_max,ymin=0,ymax=vline_max,color='black',lw=2,label='y: {0} {1}'.format(y_scale,y_units))
     legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0, frameon=False)
 
-def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, show_outliers=True, **y_hline):
+def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, no_x=False, show_outliers=True, **y_hline):
     """
     Makes a much improved boxplot.
 
@@ -145,6 +145,8 @@ def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, show_ou
     medians_only: bool (default=False)
         Default changes the entire boxplot the new color,
         but if True only changes the color of the median bar.
+    no_x: bool (default=False)
+        Change to 'True' if you want to get rid of the bottom x-axis and ticks.
     showfliers: bool (default=True)
         Turns outliers on or off.
     y_hline: key-value pair or None (default=None)
@@ -157,9 +159,14 @@ def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, show_ou
     bp: dict of matplolib objects
         Contains all the necessary boxplot parameters, and when properly assigned to a matplotlib axes object will render your boxplot.
 
-    TO DO:
+    Notes
+    -----
+    Built on top of Pandas instead of straight from matplotlib because of Panda's handles NaNs (unequal df column lengths) properly. It's just far easier to use what Wes has already built than reinvent the wheel when making multiple boxplots.
+
+    TODO:
     - Add y_label param??
     - Add option for specific colors (add to scatter?)
+    - move xaxis labels to left an option
     """
     # set up basic plotting values and parameters
     if df.ndim == 1:
@@ -212,9 +219,12 @@ def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, show_ou
     # make final changes to plot to clean it up and make it pretty
     ax.xaxis.set_ticklabels(labels, rotation=45)
     simple_axis(ax)
+    if no_x:
+        ax.spines['bottom'].set_visible(False)
+        ax.get_xaxis().set_visible(False)
     return bp
 
-def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, seed=0):
+def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, paired=False, seed=0):
     """
     Creates a scatter column plot.
 
@@ -232,6 +242,8 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, s
         Sets the size of the scatter plot marker.
     monocolor: any matplotlib color (default=False)
         Set all scatter plot objects to the specificed color.
+    paired: bool (default=False)
+        Will draw grey lines to data points with the same row index. (may add features later to keep people from mucking it up, but we'll see...)
     seed:
         Sets the numpy.random.seed value that controls the jitter of the resulting plots. Same data + same seed = same figure.
 
@@ -241,8 +253,6 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, s
         Contains all the necessary scatterplot parameters, and when properly assigned to a matplotlib axes object will render your scatterplot.
 
     TODO:
-    - Add y_label param?
-    - Add jitter scaling to keep perfectly consistent across plots
     """
     # set up basic plotting values and parameters
     np.random.seed(seed)
@@ -271,6 +281,11 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, s
                      markersize=markersize)
         if monocolor:
             mpl.artist.setp(sc[0], markeredgecolor=monocolor,markerfacecolor=monocolor)
+    # draw a line connecting dots (assuming two columns)
+    if paired:
+        for i in range(len(df)):
+            ax.plot(np.arange(1,column_num+1),df.ix[i],
+                    color='grey')
     # make final changes to plot to clean it up and make it pretty
     ax.set_xlim(0.5, column_num+0.5)
     ax.xaxis.set_ticks(np.arange(1, column_num+1))
