@@ -165,7 +165,6 @@ def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, no_x=Fa
 
     TODO:
     - Add y_label param??
-    - Add option for specific colors (add to scatter?)
     - move xaxis labels to left an option
     """
     # set up basic plotting values and parameters
@@ -224,7 +223,7 @@ def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, no_x=Fa
         ax.get_xaxis().set_visible(False)
     return bp
 
-def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, paired=False, seed=0):
+def nu_scatter(ax, df, alpha=0.35, cmap=False, color_list=False, jitter=0.05, markersize=8, monocolor=False, paired=False, seed=0):
     """
     Creates a scatter column plot.
 
@@ -236,6 +235,10 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, p
         Pandas Dataframe where each column makes a separate scatter column plot. Column names will be used as x-axis labels.
     alpha: float (0.0 through 1.0)
         Sets marker opacity. 0.0 = transparent through 1.0 = opaque.
+    cmap: string (or direct call)
+        Any valid matplotlib colormap (ex: 'afmhot' or 'viridis'). Can also call through direct mpl.cm.<colormap_name>.
+    color_list: list
+        List of valid matplotlib colors. Colors will be repeated if not enough are supplied.
     jitter: float (0.0 through 1.0, default=0.35)
         Sets the amount of jitter in the column data. The default value keeps the scatter to roughly between the whiskers. 0.0 = no jitter through 1.0 = jitter the width of the plot. Can technically go past 1.0, but at that point you lose data from the figure, so do not do that.
     markersize: float
@@ -243,7 +246,7 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, p
     monocolor: any matplotlib color (default=False)
         Set all scatter plot objects to the specificed color.
     paired: bool (default=False)
-        Will draw grey lines to data points with the same row index. (may add features later to keep people from mucking it up, but we'll see...)
+        Will draw grey lines to data points with the same row index. If jitter set to 0 lines will connect datapoints. If not, it will look stupid. (may add features later to keep people from mucking it up, but we'll see...)
     seed:
         Sets the numpy.random.seed value that controls the jitter of the resulting plots. Same data + same seed = same figure.
 
@@ -253,6 +256,7 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, p
         Contains all the necessary scatterplot parameters, and when properly assigned to a matplotlib axes object will render your scatterplot.
 
     TODO:
+    - Should I just remove the markeredge entirely? may make things easier in the long run... (Update: did removed it, but could easily add it back. Need input from the lab since I don't want an overabundance of optional parameters to pass to the function that won't be used 99.9% of the time).
     """
     # set up basic plotting values and parameters
     np.random.seed(seed)
@@ -263,8 +267,16 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, p
     else:
         column_num = df.shape[1]
         labels = df.columns.values
-    # create the plot
-    for i in range(column_num):
+    # make color cycler
+    if cmap:
+        color_idx = np.linspace(0,1,column_num)
+        color_cycler = cycler('color',[mpl.cm.get_cmap(cmap)(color_idx[i]) for i in range(column_num)])
+    elif color_list:
+        color_cycler = cycler('color',color_list)
+    else:
+        color_cycler = cycler('color',[i['color'] for i in mpl.rcParams['axes.prop_cycle']])
+    # create the base plot
+    for i, color_dict in zip(range(column_num), cycle(color_cycler)):
         if column_num == 1:
             y = data
         else:
@@ -273,15 +285,19 @@ def nu_scatter(ax, df, alpha=0.35, jitter=0.05, markersize=8, monocolor=False, p
             x = [i+1]*len(y)
         else:
             x = np.random.normal(i+1, jitter, size=len(y))
+        # need to set color at beginning so it doesn't cycle with every line
+        color = color_dict['color']
         sc = ax.plot(x,y,
                      alpha=alpha,
+                     color=color,
                      linestyle='None',
                      label=labels[i],
                      marker='.',
-                     markersize=markersize)
+                     markersize=markersize,
+                     markeredgewidth=0)
         if monocolor:
             mpl.artist.setp(sc[0], markeredgecolor=monocolor,markerfacecolor=monocolor)
-    # draw a line connecting dots (assuming two columns)
+    # draw a line connecting dots
     if paired:
         for i in range(len(df)):
             ax.plot(np.arange(1,column_num+1),df.ix[i],
