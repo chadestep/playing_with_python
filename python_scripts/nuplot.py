@@ -8,8 +8,8 @@ from matplotlib.pyplot import legend
 import numpy as np
 from cycler import cycler
 from itertools import cycle
-# using my style not necessary, but highly encouraged
-mpl.style.use('estep_style')
+# using my style not necessary, but GREATLY encouraged
+# mpl.style.use('estep_style')
 
 def simple_axis(ax):
     """
