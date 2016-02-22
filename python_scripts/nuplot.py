@@ -116,6 +116,7 @@ def nu_legend(f, x_scale, x_units, y_scale, y_units):
 
     TODO:
     - modify this function to work on specific axes?
+    - make compatible with the rest of the plotting functions? (thinking no)
     """
     ax = f.axes[-1]
     x_min,x_max = ax.get_xlim()[0],ax.get_xlim()[1]
@@ -164,8 +165,8 @@ def nu_boxplot(ax, df, cmap=False, color_list=False, medians_only=False, no_x=Fa
     Built on top of Pandas instead of straight from matplotlib because of Panda's handles NaNs (unequal df column lengths) properly. It's just far easier to use what Wes has already built than reinvent the wheel when making multiple boxplots.
 
     TODO:
-    - Add y_label param??
-    - move xaxis labels to left an option
+    - make no_x default True?
+    - move xaxis labels to left an option?
     """
     # set up basic plotting values and parameters
     if df.ndim == 1:
